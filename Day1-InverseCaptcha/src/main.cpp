@@ -15,8 +15,8 @@ at an forward offset of half the sequence length. E.g, 1212 gives 1+2.
 #include <fstream>
 #include <string>
 
-int solve_part_one(std::string fname);
-int solve_part_two(std::string fname);
+int solve_part_one(std::ifstream&);
+int solve_part_two(std::ifstream&);
 
 int main()
 {
@@ -24,24 +24,29 @@ int main()
 	std::cout << "This program solves both parts of the Day 1 puzzle of Advent of Code 2017\n";
 	std::cout << "Provide the input data file path: ";
 	std::cin >> fname;
-
-	int digit_sum = solve_part_one(fname);
-	if (digit_sum == -1)
-		return 0;
-	std::cout << "The answer to part one is: " << digit_sum << '\n';
-
-	digit_sum = solve_part_two(fname);
-	std::cout << "The answer to part two is: " << digit_sum << '\n';
+	
+	{
+		std::ifstream ifs(fname);
+		if (!ifs) {
+			std::cout << "Couldn't open file.\n";
+			return 0;
+		}
+		std::cout << "The answer to part one is: " << solve_part_one(ifs) << '\n';
+	}
+	
+	{
+		std::ifstream ifs(fname);
+		if (!ifs) {
+			std::cout << "Couldn't open file.\n";
+			return 0;
+		}
+		std::cout << "The answer to part two is: " << solve_part_two(ifs) << '\n';
+	}
+	
 }
 
-int solve_part_one(std::string fname)
+int solve_part_one(std::ifstream& ifs)
 {
-	std::ifstream ifs(fname);
-	if (!ifs) {
-		std::cout << "Invalid file input.\n";
-		return -1;
-	}
-
 	int digit_sum = 0;
 	char first_digit = 0, prev_digit = 0, next_digit = 0;
 	char base = '0';
@@ -61,10 +66,8 @@ int solve_part_one(std::string fname)
 	return digit_sum;
 }
 
-int solve_part_two(std::string fname)
+int solve_part_two(std::ifstream& ifs)
 {
-	std::ifstream ifs(fname);
-
 	ifs.ignore(std::numeric_limits<std::streamsize>::max());
 	auto half_fsize = ifs.gcount()/2;
 	ifs.clear();
