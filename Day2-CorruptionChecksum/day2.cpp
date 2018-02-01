@@ -99,7 +99,7 @@ int solve_part_two(std::ifstream& ifs) {
 		}
 
 		bool found_pair = false; // As we know there is only one divisble pair per line we can
-								 // exit the loop when it's found.
+                                 // exit the loop when it's found.
 		for (auto it = line_nums.cbegin(); it != line_nums.cend()-1; ++it) {
 			for (auto itt = it + 1; itt != line_nums.cend(); ++itt) {
 				if (*it % *itt == 0 || *itt % *it == 0) {
