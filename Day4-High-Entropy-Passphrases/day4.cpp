@@ -24,7 +24,7 @@ int solve_part_two(std::ifstream&);
 int main()
 {
 	std::string fname;
-	std::cout << "This program solves both parts of the Day 2 puzzle of Advent of Code 2017\n";
+	std::cout << "This program solves both parts of the Day 4 puzzle of Advent of Code 2017\n";
 	std::cout << "Provide the input data file path: ";
 	std::cin >> fname;
 
