@@ -2,6 +2,13 @@
 This is a solution to both parts of the Day 3 puzzle of Advent of Code 2017.
 
 The problem description can be found at https://adventofcode.com/2017/day/4.
+
+The input is a collection of passphrases: groups of words.
+
+The first problem is to find the number of passphrases that contain no duplicate words.
+
+The second problem is to find the number of passphrases that contain no words that are
+anagrams of each other.
 */
 
 #include <iostream>
