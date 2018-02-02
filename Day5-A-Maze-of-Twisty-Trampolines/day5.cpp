@@ -8,7 +8,6 @@ The problem description can be found at https://adventofcode.com/2017/day/5.
 #include <fstream>
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <iterator>
 
 int solve_part_one(std::ifstream&);
