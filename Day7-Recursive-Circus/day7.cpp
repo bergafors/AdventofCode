@@ -19,7 +19,7 @@ The problem description can be found at https://adventofcode.com/2017/day/6.
 
 std::string solve_part_one(std::ifstream&);
 int solve_part_two(std::ifstream&);
-int find_imbalanced_element(std::unordered_map<std::string, std::pair<int, std::vector<std::string>>>&, std::string, bool&, int&);
+int find_unbalanced_node(bool&, int&, std::string, std::unordered_map<std::string, std::pair<int, std::vector<std::string>>>&);
 
 
 int main()
@@ -100,50 +100,49 @@ int solve_part_two(std::ifstream& ifs)
 		tree[parent] = data;
 	}
 
-
 	ifs.clear();
 	ifs.seekg(0, std::ios::beg);
 	auto root = solve_part_one(ifs); // Begin at root node
 
-	bool found_unbalanced_node = false;
+	bool found = false;
 	int rebalanced_weight = 0;
-	std::cout << find_imbalanced_element(tree, root, found_unbalanced_node, rebalanced_weight);
+	find_unbalanced_node(found, rebalanced_weight, root, tree);
 
 	return rebalanced_weight;
 }
 
-// Calculate the weight of the tree recursively. Flag and store the imbalanced node when it is discovered
-// during this process
-int find_imbalanced_element(std::unordered_map<std::string, std::pair<int, std::vector<std::string>>>& tree,
-	std::string node, bool& found_unbalanced_node, int& rebalanced_weight)
+// Calculate the weight of the tree recursively. Flag the unbalanced node when it is discovered
+// during this process and calculate the rebalanced weight.
+int find_unbalanced_node(bool& found, int& rebalanced_weight, std::string node, 
+	std::unordered_map<std::string, std::pair<int, std::vector<std::string>>>& tree)
 {
 	std::unordered_map<int, std::vector<std::string>> weights;
-	for (const auto& n : tree[node].second) {
-		int child_weight = find_imbalanced_element(tree, n, found_unbalanced_node, rebalanced_weight);
-		if (found_unbalanced_node)
+	for (const auto& child : tree[node].second) {
+		int child_weight = find_unbalanced_node(found, rebalanced_weight, child, tree);
+		if (found) // Then we're done and may unwind the recursive weight calculation prematurely.
 			return 0;
-		weights[child_weight].push_back(n);
+		weights[child_weight].push_back(child);
 	}
 
-	if (!found_unbalanced_node && weights.size() > 1) { // If weights.size() > 1 then the node is imbalanced
-		for (const auto& p : weights) {
-			// If a certain weight only corresponds to one child node, that node must be the imbalanced one.
-			// As the search is done recursively, the imbalance must occur at that node as well, and not further
+	if (!found && weights.size() > 1) { // If weights.size() > 1 then the node is unbalanced
+		for (const auto& w : weights) {
+			// If a certain weight only corresponds to one child node, that part of the tree must be the unbalanced.
+			// As the search is done recursively, the unbalance must occur at that node as well, and not further
 			// up the tree.
-			if (p.second.size() == 1) {
-				found_unbalanced_node = true;
-				for (const auto& pp : weights) {
-					if (p.first != pp.first) {
-						int weight_diff = p.first - pp.first;
-						rebalanced_weight = tree[p.second.back()].first - weight_diff;
-					}
-				}
+			if (w.second.size() == 1) {
+				found = true;
+				auto not_w_it = std::find_if(weights.begin(), weights.end(), [&](const auto& ww) {
+					return ww != w;
+				});
+				int weight_diff = w.first - not_w_it->first;
+				rebalanced_weight = tree[w.second.back()].first - weight_diff;
 			}
 		}
 	}
 
 	int node_weight = tree[node].first;
-	for (const auto& p : weights)
-		node_weight += p.first*p.second.size();
+	for (const auto& w : weights)
+		node_weight += w.first*w.second.size();
+
 	return node_weight;
 }
