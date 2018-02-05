@@ -13,9 +13,6 @@ The problem description can be found at https://adventofcode.com/2017/day/6.
 #include <iterator>
 #include <algorithm>
 #include <unordered_map>
-#include <list>
-#include <functional>
-#include <numeric>
 
 std::string solve_part_one(std::ifstream&);
 int solve_part_two(std::ifstream&);
