@@ -12,9 +12,8 @@ The problem description can be found at https://adventofcode.com/2017/day/8.
 #include <unordered_map>
 #include <algorithm>
 
-int solve_part_one(std::ifstream&);
+std::pair<int, int> solve_both_parts(std::ifstream&);
 bool may_execute(int, std::string, int);
-int solve_part_two(std::ifstream&);
 
 int main()
 {
@@ -25,15 +24,9 @@ int main()
 	std::cin >> fname;
 
 	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part one is: " << solve_part_one(ifs) << '\n';
-	}
-	else {
-		std::cout << "Couldn't open file.\n";
-		return 0;
-	}
-
-	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part two is: " << solve_part_two(ifs) << '\n';
+		auto p = solve_both_parts(ifs);
+		std::cout << "The answer to part one is: " << p.first << '\n';
+		std::cout << "The answer to part one is: " << p.second << '\n';
 	}
 	else {
 		std::cout << "Couldn't open file.\n";
@@ -43,8 +36,9 @@ int main()
 	return 0;
 }
 
-int solve_part_one(std::ifstream& ifs)
+std::pair<int, int> solve_both_parts(std::ifstream& ifs)
 {
+	int highest_held = 0;
 	std::unordered_map<std::string, int> registers;
 	for (std::string line; std::getline(ifs, line);) {
 		std::istringstream iss(line);
@@ -73,9 +67,15 @@ int solve_part_one(std::ifstream& ifs)
 			execute = may_execute(cond_reg, cond, cond_val);
 		}
 
+		if (registers[reg_name] > highest_held)
+			highest_held = registers[reg_name];
+
 		if (execute) {
-			if (reg_op == "inc")
+			if (reg_op == "inc") {
 				registers[reg_name] += val;
+				if (registers[reg_name] > highest_held)
+					highest_held = registers[reg_name];
+			}
 			else if (reg_op == "dec")
 				registers[reg_name] -= val;
 		}
@@ -86,28 +86,23 @@ int solve_part_one(std::ifstream& ifs)
 			return p1.second < p2.second;
 		});
 
-	return it->second;
+	return { it->second, highest_held };
 }
 
 bool may_execute(int cond_reg, std::string cond, int cond_val)
 {
+	if (cond == ">" && cond_reg > cond_val)
+		return true;
+	else if (cond == ">=" && cond_reg >= cond_val)
+		return true;
+	else if (cond == "<" && cond_reg < cond_val)
+		return true;
+	else if (cond == "<=" && cond_reg <= cond_val)
+		return true;
+	else if (cond == "==" && cond_reg == cond_val)
+		return true;
+	else if (cond == "!=" && cond_reg != cond_val)
+		return true;
 
-	if (cond == ">" && cond_reg <= cond_val)
-		return false;
-	else if (cond == ">=" && cond_reg < cond_val)
-		return false;
-	else if (cond == "<" && cond_reg >= cond_val)
-		return false;
-	else if (cond == "<=" && cond_reg > cond_val)
-		return false;
-	else if (cond == "==" && cond_reg != cond_val)
-		return false;
-	else if (cond == "!=" && cond_reg == cond_val)
-		return false;
-
-	return true;
-}
-int solve_part_two(std::ifstream& ifs)
-{
-	return 0;
+	return false;
 }
