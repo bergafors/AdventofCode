@@ -4,15 +4,12 @@ This is a solution to both parts of the Day 9 puzzle of Advent of Code 2017.
 The problem description can be found at https://adventofcode.com/2017/day/9.
 */
 
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 
-int solve_part_one(std::ifstream&);
-int solve_part_two(std::ifstream&);
-
+std::pair<int, int> solve_both_parts(std::ifstream&);
 int main()
 {
 
@@ -22,27 +19,20 @@ int main()
 	std::cin >> fname;
 
 	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part one is: " << solve_part_one(ifs) << '\n';
+		auto p = solve_both_parts(ifs);
+		std::cout << "The answer to part one is: " << p.first << '\n';
+		std::cout << "The answer to part two is: " << p.second << '\n';
 	}
 	else {
 		std::cout << "Couldn't open file.\n";
 		return 0;
 	}
-
-	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part two is: " << solve_part_two(ifs) << '\n';
-	}
-	else {
-		std::cout << "Couldn't open file.\n";
-		return 0;
-	}
-
 	return 0;
 }
 
-int solve_part_one(std::ifstream& ifs)
+std::pair<int, int> solve_both_parts(std::ifstream& ifs)
 {
-	int score = 0, depth = 0;
+	int score = 0, depth = 0, num_trash = 0;
 	bool trash = false, ignore_next = false;
 	for (char ch = 0; ifs >> ch;) {
 		if (ignore_next) {
@@ -50,10 +40,18 @@ int solve_part_one(std::ifstream& ifs)
 			continue;
 		}
 		else if (trash) {
-			if (ch == '>')
+			switch (ch)
+			{
+			case '>':
 				trash = false;
-			else if (ch == '!')
+				break;
+			case '!':
 				ignore_next = true;
+				break;
+			default:
+				++num_trash;
+				break;
+			}
 			continue;
 		}
 
@@ -74,10 +72,5 @@ int solve_part_one(std::ifstream& ifs)
 		}
 	}
 
-	return score;
-}
-int solve_part_two(std::ifstream&)
-{
-
-	return 0;
+	return {score, num_trash};
 }
