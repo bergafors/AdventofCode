@@ -2,7 +2,7 @@
 /*
 This is a solution to both parts of the Day 7 puzzle of Advent of Code 2017.
 
-The problem description can be found at https://adventofcode.com/2017/day/6.
+The problem description can be found at https://adventofcode.com/2017/day/7.
 */
 
 
@@ -17,7 +17,6 @@ The problem description can be found at https://adventofcode.com/2017/day/6.
 std::string solve_part_one(std::ifstream&);
 int solve_part_two(std::ifstream&);
 int find_unbalanced_node(bool&, int&, std::string, std::unordered_map<std::string, std::pair<int, std::vector<std::string>>>&);
-
 
 int main()
 {
