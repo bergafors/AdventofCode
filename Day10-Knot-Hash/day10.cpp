@@ -11,8 +11,11 @@ The problem description can be found at https://adventofcode.com/2017/day/9.
 #include <numeric>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 
-std::pair<int, int> solve_both_parts(std::ifstream&);
+int solve_part_one(std::ifstream&);
+std::string solve_part_two(std::ifstream&);
+std::vector<int>::iterator tie_knot(std::vector<int>::iterator, int, std::vector<int>&);
 
 int main()
 {
@@ -23,9 +26,14 @@ int main()
 	std::cin >> fname;
 
 	if (std::ifstream ifs(fname); ifs) {
-		auto p = solve_both_parts(ifs);
-		std::cout << "The answer to part one is: " << p.first << '\n';
-		std::cout << "The answer to part two is: " << p.second << '\n';
+		std::cout << "The answer to part one is: " << solve_part_one(ifs) << '\n';
+	}
+	else {
+		std::cout << "Couldn't open file.\n";
+	}
+
+	if (std::ifstream ifs(fname); ifs) {
+		std::cout << "The answer to part two is: " << solve_part_two(ifs) << '\n';
 	}
 	else {
 		std::cout << "Couldn't open file.\n";
@@ -34,7 +42,7 @@ int main()
 	return 0;
 }
 
-std::pair<int, int> solve_both_parts(std::ifstream& ifs)
+int solve_part_one(std::ifstream& ifs)
 {
 	std::vector<int> num_list(256);
 	std::iota(num_list.begin(), num_list.end(), 0);
@@ -49,26 +57,85 @@ std::pair<int, int> solve_both_parts(std::ifstream& ifs)
 	std::string slength;
 	for (int skip = 0; std::getline(linestream, slength, ','); ++skip) {
 		const auto length = std::stoi(slength);
-		const auto nstep = length - 1;
 
-		auto first = pos;
-		const auto nstep_to_end = e - first;
+		auto end_of_knot = tie_knot(pos, length, num_list);
 
-		auto last = nstep_to_end > nstep ? first + nstep : b + (nstep - nstep_to_end);
-		const auto next_pos_start = last + 1 == e ? b : last + 1;
-
-		for (int i = 0; i < length / 2; ++i) {
-			std::swap(*first, *last);
-			first = first + 1 == e ? b : first + 1;
-			last = last == b ? e - 1 : last - 1;
-		}
-
-		{
-			const auto nskip_to_end = e - next_pos_start;
-			pos = nskip_to_end > skip ? next_pos_start + skip : b + (skip - nskip_to_end);
-		} 
+		// Advance position
+		const auto nskip_to_end = e - end_of_knot;
+		pos = nskip_to_end > skip ? end_of_knot + skip : b + (skip - nskip_to_end); 
 		
 	}
 
-	return {num_list[0]*num_list[1], 0};
+	return num_list[0]*num_list[1];
+}
+
+std::string solve_part_two(std::ifstream& ifs)
+{
+	std::vector<int> num_list(256);
+	std::iota(num_list.begin(), num_list.end(), 0);
+	
+	std::vector<int> vlengths;
+	for (char c = 0; ifs.get(c) && c != '\n';)
+		vlengths.push_back(c);
+	vlengths.insert(vlengths.end(), { 17, 31, 73, 47, 23 });
+
+	auto pos = num_list.begin();
+	int skip = 0;
+	for (int i = 0; i < 64; ++i) {
+		const auto b = num_list.begin();
+		const auto e = num_list.end();
+		for (const auto& length : vlengths) {
+			auto end_of_knot = tie_knot(pos, length, num_list);
+
+			// Advance position
+			const auto nskip_to_end = e - end_of_knot;
+			pos = nskip_to_end > skip ? end_of_knot + skip : b + (skip - nskip_to_end) % 256;
+
+			++skip;
+		}
+	}
+
+	// Compute the dense version of the hash knot
+	std::vector<int> dense_hash(16);
+	for (int i = 0; i < 16 ; ++i) {
+		auto start = num_list.begin() + 16 * i;
+		auto pos = start;
+		dense_hash[i] = *start;
+		
+		while (pos - start < 15) {
+			++pos;
+			dense_hash[i] ^= *pos;
+		}
+	}
+
+	// Rewrite hash in hex
+	std::ostringstream oss;
+	oss << std::hex;
+	for (const auto& i : dense_hash)
+		oss << i;
+	
+	return oss.str();
+		
+}
+
+std::vector<int>::iterator tie_knot(std::vector<int>::iterator pos, int length, std::vector<int>& num_list)
+{
+	const auto b = num_list.begin();
+	const auto e = num_list.end();
+
+	const auto nstep = length - 1;
+
+	auto first = pos;
+	const auto nstep_to_end = e - first;
+
+	auto last = nstep_to_end > nstep ? first + nstep : b + (nstep - nstep_to_end);
+	const auto end_of_knot = last + 1 == e ? b : last + 1;
+
+	for (int i = 0; i < length / 2; ++i) {
+		std::swap(*first, *last);
+		first = first + 1 == e ? b : first + 1;
+		last = last == b ? e - 1 : last - 1;
+	}
+
+	return end_of_knot;
 }
