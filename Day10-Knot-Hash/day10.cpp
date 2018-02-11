@@ -58,9 +58,9 @@ int solve_part_one(std::ifstream& ifs)
 	for (int skip = 0; std::getline(linestream, slength, ','); ++skip) {
 		const auto length = std::stoi(slength);
 
-		auto end_of_knot = tie_knot(pos, length, num_list);
+		const auto end_of_knot = tie_knot(pos, length, num_list);
 
-		// Advance position
+		// Skip to next position
 		const auto nskip_to_end = e - end_of_knot;
 		pos = nskip_to_end > skip ? end_of_knot + skip : b + (skip - nskip_to_end); 
 		
@@ -85,9 +85,9 @@ std::string solve_part_two(std::ifstream& ifs)
 		const auto b = num_list.begin();
 		const auto e = num_list.end();
 		for (const auto& length : vlengths) {
-			auto end_of_knot = tie_knot(pos, length, num_list);
+			const auto end_of_knot = tie_knot(pos, length, num_list);
 
-			// Advance position
+			// Skip to next position
 			const auto nskip_to_end = e - end_of_knot;
 			pos = nskip_to_end > skip ? end_of_knot + skip : b + (skip - nskip_to_end) % 256;
 
