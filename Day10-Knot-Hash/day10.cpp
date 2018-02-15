@@ -1,7 +1,7 @@
 /*
-This is a solution to both parts of the Day 9 puzzle of Advent of Code 2017.
+This is a solution to both parts of the Day 10 puzzle of Advent of Code 2017.
 
-The problem description can be found at https://adventofcode.com/2017/day/9.
+The problem description can be found at https://adventofcode.com/2017/day/10.
 */
 
 #include <iostream>
@@ -21,7 +21,7 @@ int main()
 {
 
 	std::string fname;
-	std::cout << "This program solves both parts of the Day 9 puzzle of Advent of Code 2017\n";
+	std::cout << "This program solves both parts of the Day 10 puzzle of Advent of Code 2017\n";
 	std::cout << "Provide the input data file path: ";
 	std::cin >> fname;
 
