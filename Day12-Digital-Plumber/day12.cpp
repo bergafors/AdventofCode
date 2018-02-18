@@ -13,10 +13,8 @@ The problem description can be found at https://adventofcode.com/2017/day/12.
 #include <unordered_map>
 #include <ios>
 #include <algorithm>
-#include <list>
 
-int solve_part_one(std::ifstream&);
-int solve_part_two(std::ifstream&);
+std::pair<int, int> solve_both_parts(std::ifstream&);
 
 int main()
 {
@@ -40,11 +38,9 @@ int main()
 	try {
 		file.exceptions(std::ifstream::badbit);
 
-		std::cout << "The answer to part one is: " << solve_part_one(file) << '\n';
-
-		file.clear();
-		file.seekg(0, std::fstream::beg);
-		std::cout << "The answer to part two is: " << solve_part_two(file) << '\n';
+		auto ans = solve_both_parts(file);
+		std::cout << "The answer to part one is: " << ans.first << '\n';
+		std::cout << "The answer to part two is: " << ans.second << '\n';
 	}
 	catch (const std::ifstream::failure&) {
 		std::cout << "Error reading file\n";
@@ -53,7 +49,7 @@ int main()
 	return 0;
 }
 
-int solve_part_one(std::ifstream& ifs)
+std::pair<int, int> solve_both_parts(std::ifstream& ifs)
 {
 	std::unordered_map<int, std::unordered_set<int>> groups;
 	for (std::string line; std::getline(ifs, line);) {
@@ -116,10 +112,7 @@ int solve_part_one(std::ifstream& ifs)
 		}
 	}
 
-	return group_size;
-}
+	auto ngroups = groups.size();
 
-int solve_part_two(std::ifstream&)
-{
-	return 0;
+	return { group_size, ngroups };
 }
