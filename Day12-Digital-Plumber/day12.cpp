@@ -26,18 +26,28 @@ int main()
 	std::cout << "Provide the input data file path: ";
 	std::cin >> fname;
 
-	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part one is: " << solve_part_one(ifs) << '\n';
+	std::ifstream file;
+
+	try {
+
+		file.exceptions(std::ifstream::failbit);
+		file.open(fname);
 	}
-	else {
-		std::cout << "Couldn't open file.\n";
+	catch (const std::ifstream::failure&) {
+		std::cout << "Error reading file\n";
 	}
 
-	if (std::ifstream ifs(fname); ifs) {
-		std::cout << "The answer to part two is: " << solve_part_two(ifs) << '\n';
+	try {
+		file.exceptions(std::ifstream::badbit);
+
+		std::cout << "The answer to part one is: " << solve_part_one(file) << '\n';
+
+		file.clear();
+		file.seekg(0, std::fstream::beg);
+		std::cout << "The answer to part two is: " << solve_part_two(file) << '\n';
 	}
-	else {
-		std::cout << "Couldn't open file.\n";
+	catch (const std::ifstream::failure&) {
+		std::cout << "Error reading file\n";
 	}
 
 	return 0;
@@ -71,7 +81,7 @@ int solve_part_one(std::ifstream& ifs)
 			}
 		}
 
-		// Find the largest one the connected groups
+		// Find the largest one of the connected groups
 		auto max_group = leading_digit;
 		for (const auto& i : connected_groups) {
 			if (groups[i].size() > groups[max_group].size())
@@ -98,7 +108,8 @@ int solve_part_one(std::ifstream& ifs)
 	}
 
 	std::size_t group_size = 0;
-	for (const auto& [k, v] : groups) {
+	for (const auto& p : groups) {
+		const auto& v = p.second;
 		if (auto it = v.find(0); it != v.end()) {
 			group_size = v.size();
 			break;
