@@ -72,30 +72,32 @@ std::pair<int, int> solve_both_parts(std::ifstream& ifs)
 			for (const auto&[k, v] : groups) {
 				if (k == leading_digit)
 					continue;
-				if (auto pos = v.find(digit); pos != v.end())
+				if (auto pos = v.find(digit); pos != v.end()) {
 					connected_groups.push_back(k);
+					break;
+				}
 			}
 		}
 
-		// Find the largest one of the connected groups
+		// Find the largest one of the connected groups. See below for reason.
 		auto max_group = leading_digit;
 		for (const auto& i : connected_groups) {
 			if (groups[i].size() > groups[max_group].size())
 				max_group = i;
 		}
 
-		// We merge to group[leading_digit]. By swapping the largest group here we ensure
+		// We intend to merge to group[leading_digit]. By swapping the largest group here we ensure
 		// the minimal amount of copies and erases.
 		groups[leading_digit].swap(groups[max_group]);
 
 		// Merge the connected sets and erase the remaining copies
-		for (auto it = groups.begin(); it != groups.end();) {
+		for (auto it = groups.begin(); it != groups.end() && !connected_groups.empty();) {
 			auto& [k, v] = *it;
-
 			auto pos = std::find(connected_groups.begin(), connected_groups.end(), k);
 			if (pos != connected_groups.end()) {
 				groups[leading_digit].insert(v.begin(), v.end());
 				it = groups.erase(it);
+				connected_groups.erase(pos);
 			}
 			else {
 				++it;
