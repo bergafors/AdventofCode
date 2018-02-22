@@ -82,6 +82,5 @@ std::pair<int, int> solve_both_parts(std::ifstream& file)
 	int t = 0;
 	while (!passes(t)) ++t;
 
-
 	return { severity, t};
 }
