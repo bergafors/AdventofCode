@@ -29,13 +29,7 @@ int main()
 	std::cout << "Provide the input key string: ";
 	std::cin >> key_string;
 
-	//std::cout << knot_hash("") << '\n';
-	//std::cout << knot_hash("AoC 2017") << '\n';
-	//std::cout << knot_hash("1,2,3") << '\n';
-	//std::cout << knot_hash("1,2,4") << '\n';
-
-
-	//std::cout << "The answer to part one is: " << solve_part_one(key_string) << '\n';
+	std::cout << "The answer to part one is: " << solve_part_one(key_string) << '\n';
 	std::cout << "The answer to part two is: " << solve_part_two(key_string) << '\n';
 	return 0;
 }
