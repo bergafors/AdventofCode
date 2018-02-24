@@ -45,7 +45,7 @@ int solve_part_one(const std::string& key)
 
 		std::bitset<128> bt;
 		for (std::size_t j = 0; j < row_hash.length(); ++j) {
-			std::string sval = row_hash.substr(j, 1)
+			std::string sval = row_hash.substr(j, 1);
 			int n = std::stoi(sval, nullptr, 16);
 			bt |= std::bitset<128>(n) << 128 - 4 * (j+1);
 		}
