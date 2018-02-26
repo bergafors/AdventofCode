@@ -29,12 +29,11 @@ int solve_part_one(int input)
 {
 	const std::size_t nstep = input;
 	const std::size_t niter = 2017;
+
 	std::list<int> circular_buffer{ 0 };
 
-	auto it = circular_buffer.begin();
-	auto itb = circular_buffer.begin();
-
 	std::size_t pos = 0;
+	auto it = circular_buffer.begin();
 	for (std::size_t i = 1; i <= niter; ++i) {
 		const auto sz = circular_buffer.size();
 		const auto remainder = nstep % sz;
@@ -42,10 +41,13 @@ int solve_part_one(int input)
 
 		int diff = new_pos - pos;
 		std::advance(it, diff);
+		pos = new_pos;
 		
+		// Move one step extra to simulate insertion ahead of new_pos.
 		++it;
 		it = circular_buffer.insert(it, i);
-		pos = new_pos + 1;
+		// Update pos to the position of the inserted value.
+		++pos;
 	}
 	
 	++it;
@@ -53,5 +55,20 @@ int solve_part_one(int input)
 }
 int solve_part_two(int input)
 {
-	return 0;
+	const std::size_t nstep = input;
+	const long niter = 50000000;
+
+	std::size_t pos = 0;
+	long val_after_zero = 0;
+	for (std::size_t i = 1; i <= niter; ++i) {
+		const long sz = i;
+		const long remainder = nstep % sz;
+		const long new_pos = (pos + remainder) % sz;
+		
+		if (new_pos == 0)
+			val_after_zero = i;
+		pos = new_pos + 1;
+	}
+
+	return val_after_zero;
 }
