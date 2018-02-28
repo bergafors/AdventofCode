@@ -161,19 +161,15 @@ void reach_deadlock(std::string fname,
 		thread_safe_queue_agg<long long>& inc_queue_agg, thread_safe_queue_agg<long long>& out_queue_agg,
 		bool& this_waiting, bool& that_waiting)
 {
-	auto& inc_queue = inc_queue_agg.queue;
-	auto& out_queue = out_queue_agg.queue;
+	using namespace std::string_literals;
+
+	std::unordered_map<std::string, long long> registers;
+	if (inc_queue_agg.nsent == 1) {
+		registers["p"] = 1;
+		inc_queue_agg.nsent = 0;
+	}
 
 	std::ifstream file(fname);
-
-	const long long id = inc_queue_agg.nsent;
-	inc_queue_agg.nsent = 0;
-
-	using namespace std::string_literals;
-	std::unordered_map<std::string, long long> registers;
-	if (id == 1)
-		registers["p"] = 1;
-
 	std::vector<std::ifstream::pos_type> stream_pos{ file.tellg() };
 	for (std::string line; std::getline(file, line);) {
 		stream_pos.push_back(file.tellg());
@@ -199,21 +195,21 @@ void reach_deadlock(std::string fname,
 		else if (op_code == "mod"s)
 			registers[sX] %= Y;
 		else if (op_code == "rcv"s) {
-			std::unique_lock<std::mutex> lock(inc_queue_agg.m);
+			std::unique_lock<std::mutex> lk(inc_queue_agg.m);
 			const auto timeout = std::chrono::milliseconds(500);
-			while (inc_queue.empty()) {
+			while (inc_queue_agg.queue.empty()) {
 				this_waiting = true;
 				if (that_waiting)
 					return;
-				inc_queue_agg.cv.wait_for(lock, timeout);		
+				inc_queue_agg.cv.wait_for(lk, timeout);		
 			}
 			this_waiting = false;
-			registers[sX] = inc_queue.back();
-			inc_queue.pop_back();
+			registers[sX] = inc_queue_agg.queue.back();
+			inc_queue_agg.queue.pop_back();
 		}
 		else if (op_code == "snd"s) {
-			std::lock_guard<std::mutex> lock(out_queue_agg.m);
-			out_queue.push_front(registers[sX]);
+			std::lock_guard<std::mutex> lk(out_queue_agg.m);
+			out_queue_agg.queue.push_front(registers[sX]);
 			out_queue_agg.cv.notify_one();
 			++out_queue_agg.nsent;
 		}
