@@ -14,11 +14,10 @@ The problem description can be found at https://adventofcode.com/2017/day/19.
 #include <algorithm>
 #include <iterator>
 
-std::string solve_part_one(std::vector<std::vector<char>>&);
-std::string solve_part_two(std::vector<std::vector<char>>&);
+std::pair<std::string, std::size_t> solve_both_parts(const std::vector<std::vector<char>>&);
 
 std::vector<std::vector<char>> read_input(std::ifstream&);
-bool step_forward(std::vector<std::vector<char>>&,
+bool step_forward(const std::vector<std::vector<char>>&,
 	std::pair<std::size_t, std::size_t>&, std::pair<std::size_t, std::size_t>&);
 
 int main()
@@ -50,8 +49,9 @@ int main()
 		return 0;
 	}
 
-	std::cout << "The answer to part one is: " << solve_part_one(routing_diagram) << '\n';
-	std::cout << "The answer to part two is: " << solve_part_two(routing_diagram) << '\n';
+	auto [ans_one, ans_two] = solve_both_parts(routing_diagram);
+	std::cout << "The answer to part one is: " << ans_one << '\n';
+	std::cout << "The answer to part two is: " << ans_two << '\n';
 
 	return 0;
 }
@@ -65,7 +65,7 @@ std::vector<std::vector<char>> read_input(std::ifstream& file)
 	return routing_diagram;
 }
 
-std::string solve_part_one(std::vector<std::vector<char>>& routing_diagram)
+std::pair<std::string, std::size_t> solve_both_parts(const std::vector<std::vector<char>>& routing_diagram)
 {
 	std::pair<std::size_t, std::size_t> pos;
 	pos.first = 0;
@@ -75,17 +75,19 @@ std::string solve_part_one(std::vector<std::vector<char>>& routing_diagram)
 	decltype(pos) dir{ 1, 0 };
 
 	std::string seen_letters;
+	std::size_t nsteps = 0;
 	do {
+		++nsteps;
 		const auto& symbol = routing_diagram[pos.first][pos.second];
 		if ('A' <= symbol && symbol <= 'Z')
 			seen_letters.push_back(symbol);
 	} while (step_forward(routing_diagram, pos, dir));
 
-	return seen_letters;
+	return { seen_letters, nsteps };
 }
 
 // Return true if a step forward was successfully taken
-bool step_forward(std::vector<std::vector<char>>& routing_diagram,
+bool step_forward(const std::vector<std::vector<char>>& routing_diagram,
 	std::pair<std::size_t, std::size_t>& pos, std::pair<std::size_t, std::size_t>& dir)
 {
 	const auto nrow = routing_diagram.size();
@@ -121,10 +123,4 @@ bool step_forward(std::vector<std::vector<char>>& routing_diagram,
 		return false;
 
 	return true;
-}
-
-
-std::string solve_part_two(std::vector<std::vector<char>>& routing_diagram)
-{
-	return "Part two";
 }
