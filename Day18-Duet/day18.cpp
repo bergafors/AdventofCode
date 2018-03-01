@@ -75,8 +75,6 @@ int main()
 
 int solve_part_one(std::ifstream& file)
 {
-	using namespace std::string_literals;
-
 	long long last_sound = 0;
 	std::unordered_map<std::string, long long> registers;
 	std::vector<std::ifstream::pos_type> stream_pos{file.tellg()};
@@ -95,21 +93,21 @@ int solve_part_one(std::ifstream& file)
 				Y = std::stoi(sY);
 		}
 
-		if (op_code == "set"s)
+		if (op_code == "set")
 			registers[sX] = Y;
-		else if (op_code == "add"s)
+		else if (op_code == "add")
 			registers[sX] += Y;
-		else if (op_code == "mul"s)
+		else if (op_code == "mul")
 			registers[sX] *= Y;
-		else if (op_code == "mod"s)
+		else if (op_code == "mod")
 			registers[sX] %= Y;
-		else if (op_code == "rcv"s) {
+		else if (op_code == "rcv") {
 			if (registers[sX] != 0)
 				return static_cast<int>(last_sound);
 		}
-		else if (op_code == "snd"s)
+		else if (op_code == "snd")
 			last_sound = registers[sX];
-		else if (op_code == "jgz"s) {
+		else if (op_code == "jgz") {
 			long long val = (sX[0] >= 'a') ? registers[sX] : std::stoi(sX);
 			if (val <= 0)
 				continue;
@@ -161,8 +159,6 @@ void reach_deadlock(std::string fname,
 		thread_safe_queue_agg<long long>& inc_queue_agg, thread_safe_queue_agg<long long>& out_queue_agg,
 		bool& this_waiting, bool& that_waiting)
 {
-	using namespace std::string_literals;
-
 	std::unordered_map<std::string, long long> registers;
 	if (inc_queue_agg.nsent == 1) {
 		registers["p"] = 1;
@@ -186,15 +182,15 @@ void reach_deadlock(std::string fname,
 				Y = std::stoi(sY);
 		}
 
-		if (op_code == "set"s)
+		if (op_code == "set")
 			registers[sX] = Y;
-		else if (op_code == "add"s)
+		else if (op_code == "add")
 			registers[sX] += Y;
-		else if (op_code == "mul"s)
+		else if (op_code == "mul")
 			registers[sX] *= Y;
-		else if (op_code == "mod"s)
+		else if (op_code == "mod")
 			registers[sX] %= Y;
-		else if (op_code == "rcv"s) {
+		else if (op_code == "rcv") {
 			std::unique_lock<std::mutex> lk(inc_queue_agg.m);
 			const auto timeout = std::chrono::milliseconds(500);
 			while (inc_queue_agg.queue.empty()) {
@@ -207,13 +203,13 @@ void reach_deadlock(std::string fname,
 			registers[sX] = inc_queue_agg.queue.back();
 			inc_queue_agg.queue.pop_back();
 		}
-		else if (op_code == "snd"s) {
+		else if (op_code == "snd") {
 			std::lock_guard<std::mutex> lk(out_queue_agg.m);
 			out_queue_agg.queue.push_front(registers[sX]);
 			out_queue_agg.cv.notify_one();
 			++out_queue_agg.nsent;
 		}
-		else if (op_code == "jgz"s) {
+		else if (op_code == "jgz") {
 			long long val = (sX[0] >= 'a') ? registers[sX] : std::stoi(sX);
 			if (val <= 0)
 				continue;
