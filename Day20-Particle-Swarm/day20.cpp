@@ -155,7 +155,7 @@ int initial_state_norm(const std::tuple<int, int, int>& a, const std::tuple<int,
 	auto [b0, b1, b2] = b;
 
 	int norm  = a0 * b0 < 0 ? -std::abs(b0) : std::abs(b0);
-		norm += a1 * b1 < 0 ? -std::abs(b1) : std::abs(b1);
+	    norm += a1 * b1 < 0 ? -std::abs(b1) : std::abs(b1);
 		norm += a2 * b2 < 0 ? -std::abs(b2) : std::abs(b2);
  
 	return norm;
