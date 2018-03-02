@@ -14,6 +14,7 @@ The problem description can be found at https://adventofcode.com/2017/day/20.
 #include <tuple>
 #include <algorithm>
 #include <iterator>
+#include <list>
 
 struct particle
 {
@@ -30,6 +31,8 @@ int solve_part_one(const std::vector<particle>&);
 int solve_part_two(const std::vector<particle>&);
 std::vector<particle> read_input(std::ifstream&);
 int initial_state_norm(const std::tuple<int, int, int>&, const std::tuple<int, int, int>&);
+void time_step(std::list<particle>&);
+void remove_collisions(std::list<particle>&);
 
 int main()
 {
@@ -148,27 +151,57 @@ int initial_state_norm(const std::tuple<int, int, int>& a, const std::tuple<int,
 {
 	using namespace std;
 
-	int norm = 0;
-	if (get<0>(a) * get<0>(b) < 0)
-		norm -= abs(get<0>(b));
-	else
-		norm += abs(get<0>(b));
+	auto [a0, a1, a2] = a;
+	auto [b0, b1, b2] = b;
 
-	if (get<1>(a) * get<1>(b) < 0)
-		norm -= abs(get<1>(b));
-	else
-		norm += abs(get<1>(b));
+	int norm  = a0 * b0 < 0 ? -std::abs(b0) : std::abs(b0);
+		norm += a1 * b1 < 0 ? -std::abs(b1) : std::abs(b1);
+		norm += a2 * b2 < 0 ? -std::abs(b2) : std::abs(b2);
 
-	if (get<2>(a) * get<2>(b) < 0)
-		norm -= abs(get<2>(b));
-	else
-		norm += abs(get<2>(b));
-		
 	return norm;
 }
 
 
 int solve_part_two(const std::vector<particle>& particle_data)
 {
-	return 0;
+	const int nsteps = 1000;
+	std::list<particle> particle_list(particle_data.begin(), particle_data.end());
+
+	auto pos_comp = [](const particle& a, const particle& b) {
+		return a.p < b.p;
+	};
+
+	for (int i = 0; i < nsteps; ++i) {
+		particle_list.sort(pos_comp);
+		remove_collisions(particle_list);
+		time_step(particle_list);
+	}
+
+	return particle_list.size();
+}
+
+void time_step(std::list<particle>& particle_list)
+{
+	for (auto& p : particle_list) {
+		auto& [a1, a2, a3] = p.a;
+		auto& [v1, v2, v3] = p.v;
+		auto& [p1, p2, p3] = p.p;
+
+		p.v = { v1 + a1, v2 + a2, v3 + a3 };
+		p.p = { p1 + v1, p2 + v2, p3 + v3 };
+	}
+}
+
+void remove_collisions(std::list<particle>& particle_list)
+{
+	for (auto it = particle_list.begin(); it != particle_list.end();) {
+		auto itt = it;
+		while (itt != particle_list.end() && it->p == itt->p)
+			++itt;
+
+		if (std::distance(it, itt) > 1)
+			it = particle_list.erase(it, itt);
+		else
+			++it;
+	}
 }
