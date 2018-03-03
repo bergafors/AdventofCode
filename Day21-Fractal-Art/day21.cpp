@@ -94,11 +94,10 @@ std::vector<std::pair<pattern, pattern>> parse_input(std::ifstream& file)
 std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<pattern, pattern>> enhancement_rules)
 {
 	const int NITER_PART_ONE = 5;
-	const int NITER_PART_TWO = 18;
+	const int NITER_PART_TWO = 20;
 	assert(NITER_PART_ONE <= NITER_PART_TWO);
 
 	std::size_t nactive = 0, nactive_part_one = 0;
-
 	// Partition the ehancement rules according to the size of the input pattern
 	const auto it_partition = std::partition(enhancement_rules.begin(), enhancement_rules.end(),
 		[](const auto& p) {
@@ -114,7 +113,7 @@ std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<patte
 		// letting side = 2 take precedence
 		std::size_t side = 0;
 		decltype(enhancement_rules)::iterator start, finish;
-		if (patt.size() % 2 == 0) {
+		if (patt.front().size() % 2 == 0) {
 			side = 2;
 			start = enhancement_rules.begin();
 			finish = it_partition;
@@ -125,17 +124,15 @@ std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<patte
 			finish = enhancement_rules.end();
 		}
 
-		const std::vector<pattern> split_patterns = split(patt, side);
+		const std::vector<pattern> split_patterns = split(patt , side);
 
 		// Find the enhancement rule for each entry in %split_patterns and add
 		// the output pattern to %enhanced_patterns
 		std::vector<pattern> enhanced_patterns;
+		enhanced_patterns.reserve(split_patterns.size());
 		for (const auto& p : split_patterns) {
-			if (is_variation_of(patt, p))
-				std::cout << "CORRECT" << '\n';
 			for (auto it = start; it != finish; ++it) {
 				if (is_variation_of(p, it->first)) {
-					std::cout << "ACTUALLY FOUND" << '\n';
 					enhanced_patterns.push_back(it->second);
 					break;
 				}
@@ -144,17 +141,17 @@ std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<patte
 
 		patt = assemble(enhanced_patterns);
 
-		if (i == NITER_PART_ONE) {
+		if (i == NITER_PART_ONE - 1) {
 			for (const auto& str : patt)
 				nactive_part_one += std::count(str.begin(), str.end(), '#');
+			//nactive_part_one *= nactive_multiplier;
 		}
 	}
 
 	for (const auto& str : patt)
-		nactive += std::count(str.begin(), str.end(), '#');
-	
+		nactive += std::count(str.begin(), str.end(), '#');	
 
-	return { nactive_part_one , nactive};
+	return { nactive_part_one  , nactive};
 }
 
 // Split [A] into [B, C, D, E], where the sizes of [B], ..., [E]
@@ -184,8 +181,6 @@ std::vector<pattern> split(const pattern& a, std::size_t side)
 // are all square matrices of the same size
 pattern assemble(const std::vector<pattern>& patterns)
 {	
-	std::cout << "Enhanced list sz: " << patterns.size() << '\n';
-
 	const std::size_t old_side = patterns.front().size();
 	std::size_t new_side = 0;
 
@@ -201,11 +196,13 @@ pattern assemble(const std::vector<pattern>& patterns)
 	std::size_t nblocks = new_side / old_side;
 
 	pattern reassembeld_pattern;
+	reassembeld_pattern.reserve(new_side);
 	for (std::size_t row = 0; row < new_side; ++row) {
 		std::string srow;
+		srow.reserve(new_side);
 		for (std::size_t col = 0; col < nblocks; ++col)
 			srow += patterns[col + (row / old_side) * nblocks][row % old_side];
-		reassembeld_pattern.push_back(srow);
+		reassembeld_pattern.push_back(std::move(srow));
 	}
 
 	return reassembeld_pattern;
@@ -238,6 +235,7 @@ pattern& rotate_pattern(pattern& a)
 	const std::size_t side_len = a.size();
 
 	pattern variation;
+	variation.reserve(a.size());
 	for (std::size_t i = 0; i < side_len; ++i) {
 		std::string row;
 		for (std::size_t j = 0; j < side_len; ++j) {
@@ -245,7 +243,7 @@ pattern& rotate_pattern(pattern& a)
 		}
 		variation.push_back(row);
 	}
-	a = variation;
+	a = std::move(variation);
 	return a;
 }
 
