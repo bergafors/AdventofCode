@@ -13,16 +13,20 @@ The problem description can be found at https://adventofcode.com/2017/day/21.
 #include <vector>
 
 #include <algorithm>
+#include <cassert>
 
 using pattern = std::vector<std::string>;
 
-int solve_part_one(std::vector<std::pair<pattern, pattern>>);
+std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<pattern, pattern>>);
+
 std::vector<std::pair<pattern, pattern>> parse_input(std::ifstream&);
+
+std::vector<pattern> split(const pattern&, std::size_t);
+pattern assemble(const std::vector<pattern>&);
+
 bool is_variation_of(const pattern&, pattern);
 pattern& rotate_pattern(pattern&);
 pattern& flip_pattern(pattern&);
-std::vector<pattern> split(const pattern&, std::size_t);
-pattern reassemble(const std::vector<pattern>&);
 
 
 int main()
@@ -41,17 +45,18 @@ int main()
 		std::cout << "Error opening file.\n";
 	}
 
-	std::vector<std::pair<pattern, pattern>> pattern_pair_list;
+	std::vector<std::pair<pattern, pattern>> enhancement_rules;
 	try {
 		file.exceptions(std::ifstream::badbit);
-		pattern_pair_list = parse_input(file);
+		enhancement_rules = parse_input(file);
 	}
 	catch (std::ifstream::failure&) {
 		std::cout << "Error reading file.\n";
 	}
+	const auto ans = solve_both_parts(enhancement_rules);
+	std::cout << "The answer to part one is: " << ans.first << '\n';
+	std::cout << "The answer to part two is: " << ans.second << '\n';
 
-	std::cout << "The answer to part one is: " << solve_part_one(pattern_pair_list) << '\n';
-	//std::cout << "The answer to part two is: " << solve_part_two(particle_data) << '\n';
 
 	return 0;
 }
@@ -61,7 +66,7 @@ std::vector<std::pair<pattern, pattern>> parse_input(std::ifstream& file)
 	// The number of chars in the largest pattern including the null terminator
 	const int MAXSIZE = 20;
 
-	std::vector<std::pair<pattern, pattern>> pattern_pair_list;
+	std::vector<std::pair<pattern, pattern>> enhancement_rules;
 	for (std::string line; std::getline(file, line);) {
 		char input_string[MAXSIZE], output_string[MAXSIZE];
 		int i = sscanf_s(line.c_str(), "%s => %s", input_string, MAXSIZE, output_string, MAXSIZE);
@@ -80,64 +85,76 @@ std::vector<std::pair<pattern, pattern>> parse_input(std::ifstream& file)
 		for (std::string row; std::getline(output_iss, row, '/');)
 			output_pattern.push_back(row);
 
-		pattern_pair_list.push_back({input_pattern, output_pattern});
+		enhancement_rules.push_back({input_pattern, output_pattern});
 	}
 
-	return pattern_pair_list;
+	return enhancement_rules;
 }
 
-int solve_part_one(std::vector<std::pair<pattern, pattern>> pattern_pair_list)
+std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<pattern, pattern>> enhancement_rules)
 {
-	const int NITER = 5;
+	const int NITER_PART_ONE = 5;
+	const int NITER_PART_TWO = 18;
+	assert(NITER_PART_ONE <= NITER_PART_TWO);
 
-	// Partition the pattern pair list according to the size of the input pattern
-	const auto it_partition = std::partition(pattern_pair_list.begin(), pattern_pair_list.end(),
+	std::size_t nactive = 0, nactive_part_one = 0;
+
+	// Partition the ehancement rules according to the size of the input pattern
+	const auto it_partition = std::partition(enhancement_rules.begin(), enhancement_rules.end(),
 		[](const auto& p) {
 		return p.first.size() <= 2;
 	});
 
 	// Initial pattern
 	pattern patt = { ".#.", "..#", "###" };
-	for (int i = 0; i < NITER; ++i) {
+	for (int i = 0; i < NITER_PART_TWO; ++i) {
 
-		// Increase speed by only examining the pattern pair range
+		// Increase speed by only examining the enhancement rules
 		// whose input pattern size divides the size of %patt, 
 		// letting side = 2 take precedence
 		std::size_t side = 0;
-		decltype(pattern_pair_list)::iterator start, finish;
+		decltype(enhancement_rules)::iterator start, finish;
 		if (patt.size() % 2 == 0) {
 			side = 2;
-			start = pattern_pair_list.begin();
+			start = enhancement_rules.begin();
 			finish = it_partition;
 		}
 		else {
 			side = 3;
 			start = it_partition;
-			finish = pattern_pair_list.end();
+			finish = enhancement_rules.end();
 		}
 
-		const std::vector<pattern> split_pattern = split(patt, side);
+		const std::vector<pattern> split_patterns = split(patt, side);
 
-		std::vector<pattern> enhanced_split;
-		for (const auto& p : split_pattern) {
+		// Find the enhancement rule for each entry in %split_patterns and add
+		// the output pattern to %enhanced_patterns
+		std::vector<pattern> enhanced_patterns;
+		for (const auto& p : split_patterns) {
 			if (is_variation_of(patt, p))
 				std::cout << "CORRECT" << '\n';
 			for (auto it = start; it != finish; ++it) {
 				if (is_variation_of(p, it->first)) {
 					std::cout << "ACTUALLY FOUND" << '\n';
-					enhanced_split.push_back(it->second);
+					enhanced_patterns.push_back(it->second);
 					break;
 				}
 			}
 		}
-		patt = reassemble(enhanced_split);
+
+		patt = assemble(enhanced_patterns);
+
+		if (i == NITER_PART_ONE) {
+			for (const auto& str : patt)
+				nactive_part_one += std::count(str.begin(), str.end(), '#');
+		}
 	}
 
-	std::size_t nactive = 0;
 	for (const auto& str : patt)
 		nactive += std::count(str.begin(), str.end(), '#');
+	
 
-	return nactive;
+	return { nactive_part_one , nactive};
 }
 
 // Split [A] into [B, C, D, E], where the sizes of [B], ..., [E]
@@ -146,7 +163,7 @@ std::vector<pattern> split(const pattern& a, std::size_t side)
 {
 	const std::size_t nsplits = a.size() / side;
 
-	std::vector<pattern> split_pattern(nsplits * nsplits);
+	std::vector<pattern> split_patterns(nsplits * nsplits);
 	std::size_t nrows = 0;
 	for (const auto& row : a) {
 		for (std::size_t i = 0; i < nsplits; ++i) {
@@ -155,39 +172,39 @@ std::vector<pattern> split(const pattern& a, std::size_t side)
 
 			// Jump %nsplit ever %side rows
 			std::size_t jump = (nrows/ side) * nsplits;
-			split_pattern[i + jump].emplace_back(start, finish);
+			split_patterns[i + jump].emplace_back(start, finish);
 		}
 		++nrows;
 	}
 
-	return split_pattern;
+	return split_patterns;
 }
 
 // Assemble [A, B, C, D] into [A, B; C, D], where [A], ..., [D]
 // are all square matrices of the same size
-pattern reassemble(const std::vector<pattern>& pattern_list)
+pattern assemble(const std::vector<pattern>& patterns)
 {	
-	std::cout << "Enhanced list sz: " << pattern_list.size() << '\n';
+	std::cout << "Enhanced list sz: " << patterns.size() << '\n';
 
-	const std::size_t old_side = pattern_list.front().size();
+	const std::size_t old_side = patterns.front().size();
 	std::size_t new_side = 0;
 
 	{
 		// Total number of chars in the pattern list
-		const std::size_t nelem = pattern_list.size() * old_side * old_side;
+		const std::size_t nelem = patterns.size() * old_side * old_side;
 		while (new_side * new_side < nelem)
 			++new_side;
 
 	}
 
-	// The number of patterns in pattern_list per side in the reassembled pattern
+	// The number of patterns in patterns per side in the reassembled pattern
 	std::size_t nblocks = new_side / old_side;
 
 	pattern reassembeld_pattern;
 	for (std::size_t row = 0; row < new_side; ++row) {
 		std::string srow;
 		for (std::size_t col = 0; col < nblocks; ++col)
-			srow += pattern_list[col + (row / old_side) * nblocks][row % old_side];
+			srow += patterns[col + (row / old_side) * nblocks][row % old_side];
 		reassembeld_pattern.push_back(srow);
 	}
 
