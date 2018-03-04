@@ -178,7 +178,9 @@ direction turn_direction(const direction& dir, Turn turn)
 {
 	static direction up{ -1, 0 }, down{ 1, 0 }, left{ 0, -1 }, right{ 0, 1 };
 
-	if (turn == Turn::LEFT) {
+	switch (turn)
+	{
+	case Turn::LEFT:
 		if (dir == up)
 			return left;
 		else if (dir == left)
@@ -187,8 +189,8 @@ direction turn_direction(const direction& dir, Turn turn)
 			return right;
 		else
 			return up;
-	}
-	else if (turn == Turn::RIGHT) {
+		break;
+	case Turn::RIGHT:
 		if (dir == up)
 			return right;
 		else if (dir == right)
@@ -197,8 +199,8 @@ direction turn_direction(const direction& dir, Turn turn)
 			return left;
 		else
 			return up;
-	}
-	else /*if (turn == Turn::BACK)*/{
+		break;
+	case Turn::BACK:
 		if (dir == up)
 			return down;
 		else if (dir == right)
@@ -207,5 +209,10 @@ direction turn_direction(const direction& dir, Turn turn)
 			return up;
 		else
 			return right;
+		break;
+	default:
+		break;
 	}
+
+	return dir;
 }
