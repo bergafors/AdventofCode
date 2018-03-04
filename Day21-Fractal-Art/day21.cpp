@@ -2,6 +2,8 @@
 This is a solution to both parts of the Day 21 puzzle of Advent of Code 2017.
 
 The problem description can be found at https://adventofcode.com/2017/day/21.
+
+Possible improvements: using string_view to split patterns
 */
 
 #include <iostream>
@@ -94,7 +96,7 @@ std::vector<std::pair<pattern, pattern>> parse_input(std::ifstream& file)
 std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<pattern, pattern>> enhancement_rules)
 {
 	const int NITER_PART_ONE = 5;
-	const int NITER_PART_TWO = 20;
+	const int NITER_PART_TWO = 18;
 	assert(NITER_PART_ONE <= NITER_PART_TWO);
 
 	std::size_t nactive = 0, nactive_part_one = 0;
@@ -144,7 +146,6 @@ std::pair<std::size_t, std::size_t> solve_both_parts(std::vector<std::pair<patte
 		if (i == NITER_PART_ONE - 1) {
 			for (const auto& str : patt)
 				nactive_part_one += std::count(str.begin(), str.end(), '#');
-			//nactive_part_one *= nactive_multiplier;
 		}
 	}
 
