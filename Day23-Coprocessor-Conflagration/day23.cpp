@@ -13,16 +13,13 @@ The problem description can be found at https://adventofcode.com/2017/day/23.
 #include <string_view>
 #include <vector>
 
-
-enum class Part {ONE, TWO};
-
 using val_type = long long;
 
-val_type solve_part(std::vector<std::string>, const Part part);
+val_type solve_part_one(std::vector<std::string>);
 val_type solve_part_two();
 
-// Evaluates instruction jnz, which makes a jump to a new line in the instruction set.
-// %cur_line is updated accordingly.
+// Evaluates instruction jnz with %X and %Y as arguments. jnz makes a jump 
+// to a new line in the instruction set. %cur_line is updated accordingly.
 // Returns false is jnz tries to jump outside of [0, ENDLINE]. true otherwise.
 bool eval_jnz(val_type& X, const val_type& Y, val_type& cur_line, const val_type& ENDLINE);
 
@@ -53,7 +50,7 @@ int main()
 		std::cout << "Error reading input_file.\n";
 	}
 
-	std::cout << "The answer to part one is: " << solve_part(instructions, Part::ONE) << '\n';
+	std::cout << "The answer to part one is: " << solve_part_one(instructions) << '\n';
 	std::cout << "The answer to part two is: " << solve_part_two() << '\n';
 
 	return 0;
@@ -67,11 +64,9 @@ std::vector<std::string> parse_input(std::ifstream& input_file)
 	return instructions;
 }
 
-val_type solve_part(std::vector<std::string> instructions, const Part part)
+val_type solve_part_one(std::vector<std::string> instructions)
 {
 	std::unordered_map<std::string, val_type> registers;
-	if (part == Part::TWO)
-		registers["a"] = 1;
 
 	val_type nmul = 0;
 	val_type ENDLINE = static_cast<val_type>(instructions.size() - 1);
@@ -95,12 +90,8 @@ val_type solve_part(std::vector<std::string> instructions, const Part part)
 		}
 		else if (op_code == "jnz") {
 			bool success = eval_jnz(X, Y, cur_line, ENDLINE);
-			if (!success) {
-				if (part == Part::TWO)
-					return registers["h"];
-
+			if (!success)
 				return nmul;
-			}
 			continue;
 		}
 		else {
@@ -111,13 +102,11 @@ val_type solve_part(std::vector<std::string> instructions, const Part part)
 		++cur_line;
 	}
 
-	if (part == Part::TWO)
-		return registers["h"];
-
 	return nmul;
 }
 
-val_type solve_part_two() {
+val_type solve_part_two() 
+{
 	val_type b = 81 * 100 + 100'000;
 	val_type c = b + 17'000;
 	val_type h = 0;
